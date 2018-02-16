@@ -1,0 +1,1 @@
+mulByPi n = pi * n

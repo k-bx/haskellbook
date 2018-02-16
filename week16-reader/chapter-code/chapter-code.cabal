@@ -1,0 +1,30 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: be7c3fd5c154b8a7fdc470284ebc5135a570b7684d19c9c81510ee9565e1ac40
+
+name:           chapter-code
+version:        0.1.0.0
+category:       Web
+homepage:       https://github.com/k-bx/chapter-code#readme
+author:         Kostiantyn Rybnikov
+maintainer:     k-bx@k-bx.com
+copyright:      Kostiantyn Rybnikov
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    README.md
+
+executable chapter-code
+  main-is: Main.hs
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  other-modules:
+      Paths_chapter_code
+  default-language: Haskell2010

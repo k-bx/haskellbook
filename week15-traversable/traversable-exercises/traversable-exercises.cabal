@@ -1,0 +1,44 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: ff45875736e8bee09770bc5e37a66372ba0a546723b061191053857d8b35cc57
+
+name:           traversable-exercises
+version:        0.1.0.0
+category:       Web
+homepage:       https://github.com/k-bx/traversable-exercises#readme
+author:         Kostiantyn Rybnikov
+maintainer:     k-bx@k-bx.com
+copyright:      Kostiantyn Rybnikov
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    README.md
+
+executable traversable-exercises
+  main-is: Main.hs
+  hs-source-dirs:
+      src
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , checkers
+  other-modules:
+      Paths_traversable_exercises
+  default-language: Haskell2010
+
+executable traversable-exercises-s
+  main-is: S.hs
+  hs-source-dirs:
+      s
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , checkers
+  other-modules:
+      Paths_traversable_exercises
+  default-language: Haskell2010
