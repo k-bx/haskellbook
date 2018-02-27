@@ -1,0 +1,37 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: e0a2437f4a8d87a85a4901fbcd3125f3692d1905649d927d5ea0d9a91e0127c0
+
+name:           ini-parser
+version:        0.1.0.0
+category:       Unclassified
+homepage:       https://github.com/k-bx/ini-parser#readme
+author:         Kostiantyn Rybnikov
+maintainer:     k-bx@k-bx.com
+copyright:      All Rights Reserved
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    README.md
+
+executable ini-parser
+  main-is: Main.hs
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , hspec
+    , parsers
+    , raw-strings-qq
+    , text
+    , trifecta
+  other-modules:
+      Paths_ini_parser
+  default-language: Haskell2010
