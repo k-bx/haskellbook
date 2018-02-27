@@ -1,0 +1,22 @@
+name:                ex02-try-try
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/k-bx/ex02-try-try#readme
+license:             BSD3
+author:              Kostiantyn Rybnikov
+maintainer:          k-bx@k-bx.com
+copyright:           All Rights Reserved
+category:            Unclassified
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - parsers
+  - trifecta
+
+executables:
+  ex02-try-try:
+    source-dirs:      src
+    main:             Main.hs
