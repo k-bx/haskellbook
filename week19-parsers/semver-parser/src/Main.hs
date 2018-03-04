@@ -1,9 +1,8 @@
 module Main where
 
-import Text.Trifecta
 import Control.Applicative
+import Text.Trifecta
 
---import Text.Parser.Combinators
 data NumberOrString
   = NOSS String
   | NOSI Integer
@@ -38,10 +37,12 @@ instance Ord SemVer where
     ifEqElse (compare maj1 maj2) $
     ifEqElse (compare min1 min2) $
     ifEqElse (compare pat1 pat2) $
-    ifEqElse (compare rel1 rel2) $
-    ifEqElse (compare met1 met2) $ EQ
+    ifEqElse (compare rel1 rel2) $ ifEqElse (compare met1 met2) $ EQ
     where
-      ifEqElse c moveOn = if c == EQ then moveOn else c
+      ifEqElse c moveOn =
+        if c == EQ
+          then moveOn
+          else c
 
 parseNumberOrString :: Parser NumberOrString
 parseNumberOrString = (NOSI <$> try natural) <|> (NOSS <$> some alphaNum)
