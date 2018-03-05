@@ -3,6 +3,8 @@
 
 module Main where
 
+import Text.Groom
+import Control.Monad (void)
 import Safe (readMay)
 import Control.Applicative
 import Data.Text (Text)
@@ -27,15 +29,15 @@ readOrImpossible :: Read a => Parser String -> Parser a
 readOrImpossible p = do
   s <- p
   case readMay s of
-    Nothing -> fail "Impossible!?"
+    Nothing -> fail $ "Impossible!? Failed to parse a value: " ++ s
     Just a -> return a
 
 skipTillNextLine :: Parser ()
-skipTillNextLine = some (noneOf "\n") *> optional (char '\n') *> pure ()
+skipTillNextLine = many (noneOf "\n") *> optional (char '\n') *> pure ()
 
 parseActivity :: Parser Activity
 parseActivity = do
-  time <- readOrImpossible (some (noneOf " ")) :: Parser TimeOfDay
+  time <- readOrImpossible (fmap (++ ":00") (some (noneOf " "))) :: Parser TimeOfDay
   _ <- spaces
   text <- some (noneOf "\n")
   _ <- skipTillNextLine
@@ -44,14 +46,15 @@ parseActivity = do
 parseDayLog :: Parser DayLog
 parseDayLog = do
   _ <- string "# "
-  day <- readOrImpossible (some (noneOf " ")) :: Parser Day
+  day <- readOrImpossible (some (noneOf " \n")) :: Parser Day
   _ <- skipTillNextLine
-  activities <- many (optional comment *> parseActivity)
+  activities <- many (optional comment *> try parseActivity)
+  skipMany (comment <|> void space <|> void (char '\n'))
   return (DayLog day activities)
 
 parseLog :: Parser Log
 parseLog = do
-  skipMany comment *> spaces *> skipTillNextLine
+  skipMany (comment <|> void space <|> void (char '\n'))
   many parseDayLog
 
 comment :: Parser ()
@@ -90,12 +93,4 @@ example =
 
 main :: IO ()
 main = do
-  -- print $ parseString parseLog mempty example
-  let comOrSpc = comment <|> spaces
-  print $ parseString ((spaces *> spaces *> spaces) *> many anyChar) mempty " foo"
-  print $ parseString ((many space) *> many anyChar) mempty " bar"
-  print $ parseString ((many (many space)) *> many anyChar) mempty " bar"
-  -- print $ parseString ((comOrSpc *> comOrSpc *> comOrSpc *> comOrSpc) *> many anyChar) mempty "--comment\n foo"
-  -- print $ parseString ((many (optional (comment <|> spaces))) *> many anyChar) mempty "--comment\n foo"
-  -- print $ parseString ((skipMany (comment <|> spaces)) *> many anyChar) mempty "--comment\n foo"
-  -- print $ parseString ((skipMany (comment <|> spaces)) *> many anyChar) mempty "\nfoo"
+  putStrLn $ groom $ parseString parseLog mempty example

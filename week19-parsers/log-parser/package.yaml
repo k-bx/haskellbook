@@ -19,6 +19,7 @@ dependencies:
   - raw-strings-qq
   - time
   - text
+  - groom
 
 executables:
   log-parser:

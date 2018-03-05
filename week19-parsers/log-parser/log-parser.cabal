@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ad9ecd8c22f3f470b24ad704b26445a9e3de39fe69e311bb8953104c271a8561
+-- hash: d9d6f02de6e540378dd3e10d9439d2f3a15b95c45ffaa4b1af191f2889cea6f8
 
 name:           log-parser
 version:        0.1.0.0
@@ -25,6 +25,7 @@ executable log-parser
       src
   build-depends:
       base >=4.7 && <5
+    , groom
     , parsers
     , raw-strings-qq
     , safe
