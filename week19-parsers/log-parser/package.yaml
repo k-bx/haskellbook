@@ -20,6 +20,7 @@ dependencies:
   - time
   - text
   - groom
+  - containers
 
 executables:
   log-parser:

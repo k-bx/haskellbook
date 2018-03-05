@@ -3,25 +3,28 @@
 
 module Main where
 
-import Text.Groom
-import Control.Monad (void)
-import Safe (readMay)
 import Control.Applicative
+import Control.Monad (void)
+import Data.Map (Map)
+import qualified Data.Map.Strict as M
+import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
+import Safe
+import Text.Groom
 import Text.RawString.QQ (r)
 import Text.Trifecta
-import qualified Data.Text as T
 
-data Activity =
-  Activity TimeOfDay
-           Text
-  deriving (Show, Eq)
+data Activity = Activity
+  { time :: TimeOfDay
+  , name :: Text
+  } deriving (Show, Eq)
 
-data DayLog =
-  DayLog Day
-         [Activity]
-  deriving (Show, Eq)
+data DayLog = DayLog
+  { day :: Day
+  , activities :: [Activity]
+  } deriving (Show, Eq)
 
 type Log = [DayLog]
 
@@ -37,11 +40,13 @@ skipTillNextLine = many (noneOf "\n") *> optional (char '\n') *> pure ()
 
 parseActivity :: Parser Activity
 parseActivity = do
-  time <- readOrImpossible (fmap (++ ":00") (some (noneOf " "))) :: Parser TimeOfDay
+  time <-
+    readOrImpossible (fmap (++ ":00") (some (noneOf " "))) :: Parser TimeOfDay
   _ <- spaces
-  text <- some (noneOf "\n")
+  text <-
+    (manyTill (noneOf "\n") ((void (string "--")) <|> (void (oneOf "\n"))))
   _ <- skipTillNextLine
-  return (Activity time (T.pack text))
+  return (Activity time (T.strip (T.pack text)))
 
 parseDayLog :: Parser DayLog
 parseDayLog = do
@@ -88,9 +93,63 @@ example =
 14:15 Read
 21:00 Dinner
 21:15 Read
+21:16 Read2
+21:17 Read3
+21:18 Read4
 22:00 Sleep
 |]
 
+type MinutesSpent = Int
+
+type PerActivityMap = Map Text MinutesSpent
+
+todToMinutesSpent :: TimeOfDay -> MinutesSpent
+todToMinutesSpent =
+  fromIntegral .
+  (`div` (1000000000000 * 60)) . diffTimeToPicoseconds . timeOfDayToTime
+
+dayActivitiesToMinutesSpent :: [Activity] -> [(Text, MinutesSpent)]
+dayActivitiesToMinutesSpent allActivities =
+  let activitiesIndexed :: [(Int, Activity)]
+      activitiesIndexed = zip [0 ..] allActivities
+      getTimeSpent :: Int -> [(Int, Activity)] -> MinutesSpent
+      getTimeSpent i acts =
+        let actTime = time (snd (acts `at` i))
+            mnextActTime = fmap time (lookup (i + 1) acts)
+            actTimeSecs = todToMinutesSpent actTime
+            nextActTimeSecs =
+              fromMaybe (60 * 24) (fmap todToMinutesSpent mnextActTime)
+            diff = nextActTimeSecs - actTimeSecs
+        in if diff < 0
+             then 0
+             else diff
+      toSpentPair ::
+           [(Int, Activity)] -> (Int, Activity) -> (Text, MinutesSpent)
+      toSpentPair acts (i, act) = (name act, getTimeSpent i acts)
+  in map (toSpentPair activitiesIndexed) activitiesIndexed
+
 main :: IO ()
 main = do
-  putStrLn $ groom $ parseString parseLog mempty example
+  let res = parseString parseLog mempty example
+  putStrLn $ groom $ res
+  case res of
+    Failure _ -> putStrLn ":("
+    Success log -> do
+      let perActivitySpent :: [(Text, MinutesSpent)]
+          perActivitySpent =
+            concatMap (dayActivitiesToMinutesSpent . activities) log
+          perActivitySpentMap :: Map Text MinutesSpent
+          perActivitySpentMap = M.fromListWith (+) perActivitySpent
+      putStrLn $ groom $ perActivitySpentMap
+      let avgActivitiesSpent :: [Activity] -> MinutesSpent
+          avgActivitiesSpent xs =
+            let spent :: [MinutesSpent]
+                spent = map snd (dayActivitiesToMinutesSpent xs)
+            in sum spent `div` length spent
+      let avgPerActivity :: Map Day MinutesSpent
+          avgPerActivity =
+            M.fromListWith
+              (+)
+              (map (\x -> (day x, avgActivitiesSpent (activities x))) log)
+      putStrLn $ groom $ avgPerActivity
+      return ()
