@@ -26,6 +26,7 @@ instance (Applicative f, Applicative g) => Applicative (Compose f g) where
     -> Compose f g c
   liftA2 f (Compose x) (Compose y) =
     Compose (liftA2 (liftA2 f :: g a -> g b -> g c) x y :: f (g c))
+  -- (Compose f) <*> (Compose a) = Compose ((<*>) <$> f <*> a)
 
 instance (Foldable f, Foldable g) => Foldable (Compose f g) where
   foldMap ::
