@@ -2,6 +2,7 @@
 
 module Main where
 
+import Control.Monad.IO.Class
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader
 import Data.IORef
@@ -31,8 +32,11 @@ app :: Scotty ()
 app =
   get "/:key" $ do
     unprefixed <- param "key"
-    let key' = mappend undefined unprefixed
-    newInteger <- undefined
+    cfg <- lift ask
+    let key' = mappend (prefix cfg) unprefixed
+    liftIO $ modifyIORef (counts cfg) (M.insertWith (+) key' 1)
+    m <- liftIO $ readIORef (counts cfg)
+    let newInteger = fromMaybe 1 (M.lookup key' m)
     html $
       mconcat ["<h1>Success! Count was: ", TL.pack $ show newInteger, "</h1>"]
 
@@ -40,6 +44,6 @@ main :: IO ()
 main = do
   [prefixArg] <- getArgs
   counter <- newIORef M.empty
-  let config = undefined
-      runR = undefined
+  let config = Config counter (TL.pack prefixArg)
+      runR = flip runReaderT config
   scottyT 3000 runR app
